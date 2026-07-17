@@ -6,8 +6,8 @@
 // ===== Supabase 配置 =====
 // ⚠️ 使用前请替换为你的 Supabase 项目 URL 和 anon key
 // 获取方式：supabase.com → 创建项目 → Settings → API
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+const SUPABASE_URL = 'https://lxylxnpuitevskmpygop.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_-xmfUAqrX40ft-reL-kfEQ__Md2qnex';
 
 // ===== 账号体系 =====
 // admin: 管理员（最高权限，看全员数据）
