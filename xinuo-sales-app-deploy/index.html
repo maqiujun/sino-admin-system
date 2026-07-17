@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="西诺销售管控">
+<meta name="theme-color" content="#F08519">
+<title>西诺销售管控系统</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="screen-login" class="screen active">
+  <div class="login-wrap">
+    <div class="logo-area">
+      <img src="xinuo-logo.png" alt="西诺科技" class="logo-img">
+      <h1>西诺科技</h1>
+      <p>销售管控系统</p>
+    </div>
+    <div class="login-form">
+      <div class="input-group">
+        <label>账号</label>
+        <input type="text" id="login-username" placeholder="请输入工号或姓名" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>登录密码</label>
+        <input type="password" id="login-password" placeholder="请输入密码" autocomplete="off">
+      </div>
+      <button class="btn-primary btn-block" onclick="doLogin()">进入系统</button>
+      <p class="login-hint">账号说明：<br>管理员：admin（密码123456）<br>销售总监：tina（密码123456）<br>业务员：liyanqiong / qinxi / sino01 / sino02（密码123456）</p>
+      <p id="login-hint-extra" class="login-hint" style="display:none;color:var(--red);font-weight:600;">⚠️ 系统未配置云端数据库，请联系管理员配置 Supabase。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HOME SCREEN ===== -->
+<div id="screen-home" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="xinuo-logo.png" alt="" class="topbar-logo">
+      <span class="topbar-brand">西诺</span>
+      <span class="topbar-title">销售管控</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="topbar-user">--</span>
+      <button class="btn-text" onclick="doLogout()">退出</button>
+    </div>
+  </div>
+  <div class="home-content">
+    <div class="welcome-banner">
+      <img src="xinuo-logo.png" alt="" class="banner-logo">
+      <div>
+        <div class="welcome-text" id="welcome-text">欢迎回来</div>
+        <div class="welcome-sub" id="welcome-sub">今天也要加油哦~</div>
+      </div>
+    </div>
+    <div class="home-stats" id="home-stats"></div>
+    <div class="home-grid" id="home-grid">
+      <div class="home-card" onclick="startNewExam()">
+        <div class="home-card-icon">📋</div>
+        <div class="home-card-title">新建体检</div>
+        <div class="home-card-desc">客户营销健康体检</div>
+      </div>
+      <div class="home-card" onclick="switchTab('clients')">
+        <div class="home-card-icon">👥</div>
+        <div class="home-card-title">客户管理</div>
+        <div class="home-card-desc">客户资料与详情</div>
+      </div>
+      <div class="home-card" onclick="switchTab('followups')">
+        <div class="home-card-icon">📝</div>
+        <div class="home-card-title">跟进记录</div>
+        <div class="home-card-desc">销售跟进管理</div>
+      </div>
+      <div class="home-card" onclick="switchTab('export')">
+        <div class="home-card-icon">📤</div>
+        <div class="home-card-title">数据导出</div>
+        <div class="home-card-desc">飞书CSV导出</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXAM SCREEN ===== -->
+<div id="screen-exam" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="xinuo-logo.png" alt="" class="topbar-logo">
+      <span class="topbar-brand">西诺</span>
+      <span class="topbar-title">营销体检</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-text" onclick="confirmExitExam()">返回</button>
+    </div>
+  </div>
+  <div class="steps" id="steps" style="display:none;">
+    <div class="step active" data-step="1"><span class="step-num">1</span><span class="step-label">客户信息</span></div>
+    <div class="step" data-step="2"><span class="step-num">2</span><span class="step-label">诊断打分</span></div>
+    <div class="step" data-step="3"><span class="step-num">3</span><span class="step-label">结果报告</span></div>
+  </div>
+  <div id="page-client" class="exam-page active">
+    <div class="page-header">
+      <h2>📋 客户基本信息</h2>
+      <p class="page-sub">见面前预填，部分可提前查好</p>
+    </div>
+    <div id="existing-clients" style="margin-bottom:16px;"></div>
+    <div class="form-card">
+      <div class="form-row">
+        <label>客户名称 <span class="required">*</span></label>
+        <input type="text" id="f-name" placeholder="如：XX餐饮管理有限公司">
+      </div>
+      <div class="form-row">
+        <label>所属行业</label>
+        <div class="chip-group" id="chips-industry"></div>
+      </div>
+      <div class="form-row">
+        <label>门店数量</label>
+        <div class="chip-group" id="chips-stores"></div>
+      </div>
+      <div class="form-row">
+        <label>门店位置</label>
+        <input type="text" id="f-location" placeholder="主要分布在____区 / ____路附近">
+      </div>
+      <div class="form-row">
+        <label>开业时长</label>
+        <div class="chip-group" id="chips-age"></div>
+      </div>
+      <div class="form-row">
+        <label>年营收规模</label>
+        <div class="chip-group" id="chips-revenue"></div>
+        <span class="form-hint">客户自愿填；如不愿填，可根据门店规模估算</span>
+      </div>
+      <div class="form-row">
+        <label>负责人姓名/职务</label>
+        <input type="text" id="f-contact" placeholder="如：王总 / 总经理">
+      </div>
+      <div class="form-row">
+        <label>联系方式</label>
+        <input type="tel" id="f-phone" placeholder="手机号或微信号">
+      </div>
+      <div class="form-row">
+        <label>本次拜访目的</label>
+        <div class="chip-group" id="chips-purpose"></div>
+      </div>
+      <div class="form-row highlight-row">
+        <label>西诺资源预匹配 🔍</label>
+        <div class="inline-inputs">
+          <input type="number" id="f-communities" placeholder="小区数" style="flex:1">
+          <input type="number" id="f-elevators" placeholder="电梯数" style="flex:1">
+          <input type="number" id="f-doors" placeholder="门禁数" style="flex:1">
+        </div>
+        <span class="form-hint">见面前提前查好周边3公里西诺资源覆盖率</span>
+      </div>
+    </div>
+    <div class="page-actions">
+      <button class="btn-primary btn-block" onclick="goToDiagnosis()">下一步：开始诊断</button>
+    </div>
+  </div>
+  <div id="page-diagnosis" class="exam-page">
+    <div class="page-header">
+      <h2>🔍 营销健康度诊断</h2>
+      <p class="page-sub">话术导入：<em>"为了让我能更精准地帮您出方案，我想先花10分钟了解一下您目前的营销情况，问几个简单的问题，您放心，不涉及您核心机密。"</em></p>
+    </div>
+    <div id="diagnosis-container"></div>
+    <div class="page-actions">
+      <button class="btn-outline" onclick="setExamStep(1)">← 返回修改信息</button>
+      <button class="btn-primary" id="btn-submit" onclick="submitDiagnosis()" disabled>查看体检报告</button>
+    </div>
+  </div>
+  <div id="page-result" class="exam-page">
+    <div id="result-content"></div>
+    <div class="page-actions result-actions">
+      <button class="btn-outline" onclick="setExamStep(2)">← 返回修改打分</button>
+      <button class="btn-primary" onclick="finishExam()">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLIENTS SCREEN ===== -->
+<div id="screen-clients" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="xinuo-logo.png" alt="" class="topbar-logo">
+      <span class="topbar-brand">西诺</span>
+      <span class="topbar-title">客户管理</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-text" style="color:var(--blue);font-weight:600;" onclick="showAddClientModal()">+ 新增客户</button>
+    </div>
+  </div>
+  <div class="list-container">
+    <div id="client-list"></div>
+  </div>
+</div>
+
+<!-- ===== CLIENT DETAIL SCREEN ===== -->
+<div id="screen-client-detail" class="screen">
+  <div id="client-detail-content"></div>
+</div>
+
+<!-- ===== FOLLOWUPS SCREEN ===== -->
+<div id="screen-followups" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="xinuo-logo.png" alt="" class="topbar-logo">
+      <span class="topbar-brand">西诺</span>
+      <span class="topbar-title">跟进记录</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-text" style="color:var(--blue);font-weight:600;" onclick="showAddFollowupModal()">+ 新增跟进</button>
+    </div>
+  </div>
+  <div class="list-container">
+    <div id="followup-list"></div>
+  </div>
+</div>
+
+<!-- ===== EXPORT SCREEN ===== -->
+<div id="screen-export" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="xinuo-logo.png" alt="" class="topbar-logo">
+      <span class="topbar-brand">西诺</span>
+      <span class="topbar-title">数据导出</span>
+    </div>
+  </div>
+  <div class="list-container">
+    <div id="export-content"></div>
+  </div>
+</div>
+
+<!-- ===== ADMIN DASHBOARD SCREEN ===== -->
+<div id="screen-admin" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="xinuo-logo.png" alt="" class="topbar-logo">
+      <span class="topbar-brand">西诺</span>
+      <span class="topbar-title">管理后台</span>
+      <span class="role-badge admin">管理员</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="topbar-user-admin">--</span>
+      <button class="btn-text" onclick="doLogout()">退出</button>
+    </div>
+  </div>
+  <div class="list-container">
+    <div class="admin-overview" id="admin-overview"></div>
+    <div class="admin-section">
+      <h3 class="admin-section-title">👥 员工列表</h3>
+      <div id="employee-list"></div>
+    </div>
+    <div class="admin-section">
+      <h3 class="admin-section-title">📊 全员数据汇总</h3>
+      <div id="admin-data-summary"></div>
+    </div>
+    <div class="admin-section">
+      <h3 class="admin-section-title">📤 全员数据导出</h3>
+      <div id="admin-export"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB BAR (员工版) ===== -->
+<div class="tab-bar tab-bar-employee" id="tab-bar" style="display:none;">
+  <div class="tab-item active" onclick="switchTab('home')">
+    <span class="tab-icon">🏠</span>首页
+  </div>
+  <div class="tab-item" onclick="switchTab('clients')">
+    <span class="tab-icon">👥</span>客户
+  </div>
+  <div class="tab-item" onclick="switchTab('followups')">
+    <span class="tab-icon">📝</span>跟进
+  </div>
+  <div class="tab-item" onclick="switchTab('export')">
+    <span class="tab-icon">📤</span>导出
+  </div>
+</div>
+
+<!-- ===== TAB BAR (管理员版) ===== -->
+<div class="tab-bar tab-bar-admin" id="tab-bar-admin" style="display:none;">
+  <div class="tab-item active" onclick="switchTab('home')">
+    <span class="tab-icon">🏠</span>首页
+  </div>
+  <div class="tab-item" onclick="switchTab('admin')">
+    <span class="tab-icon">⚙️</span>管理
+  </div>
+  <div class="tab-item" onclick="switchTab('export')">
+    <span class="tab-icon">📤</span>导出
+  </div>
+</div>
+
+<!-- ===== TAB BAR (销售总监版) ===== -->
+<div class="tab-bar tab-bar-director" id="tab-bar-director" style="display:none;">
+  <div class="tab-item active" onclick="switchTab('home')">
+    <span class="tab-icon">🏠</span>首页
+  </div>
+  <div class="tab-item" onclick="switchTab('clients')">
+    <span class="tab-icon">👥</span>客户
+  </div>
+  <div class="tab-item" onclick="switchTab('followups')">
+    <span class="tab-icon">📝</span>跟进
+  </div>
+  <div class="tab-item" onclick="switchTab('export')">
+    <span class="tab-icon">📤</span>导出
+  </div>
+</div>
+
+<script src="supabase-config.js"></script>
+<script src="diagnosis-data.js"></script>
+<script src="csv-export.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
